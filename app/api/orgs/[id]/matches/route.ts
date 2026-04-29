@@ -6,27 +6,26 @@ const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
-  if (!session) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  const userId = session.user.id as string
 
   const { id } = await params
 
   const membership = await prisma.orgMember.findUnique({
-    where: { userId_orgId: { userId: session.user.id, orgId: id } },
+    where: { userId_orgId: { userId, orgId: id } },
   })
   if (!membership) return NextResponse.json({ error: "Non autorisé" }, { status: 403 })
 
   const myWishlist = await prisma.card.findMany({
-    where: { userId: session.user.id, listType: "WANTED" },
+    where: { userId, listType: "WANTED" },
   })
 
   if (myWishlist.length === 0) return NextResponse.json([])
 
   const otherMembers = await prisma.orgMember.findMany({
-    where: { orgId: id, userId: { not: session.user.id } },
+    where: { orgId: id, userId: { not: userId } },
     include: { user: { select: { id: true, username: true } } },
   })
-
-  const wishlistNames = myWishlist.map(c => c.cardName.toLowerCase())
 
   const matches = []
 
@@ -40,10 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     })
 
     if (owned.length > 0) {
-      matches.push({
-        member: member.user,
-        cards: owned,
-      })
+      matches.push({ member: member.user, cards: owned })
     }
   }
 

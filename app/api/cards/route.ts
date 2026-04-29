@@ -6,12 +6,12 @@ const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   const session = await auth()
-  if (!session) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
   const listType = req.nextUrl.searchParams.get("list") === "wanted" ? "WANTED" : "OWNED"
 
   const cards = await prisma.card.findMany({
-    where: { userId: session.user.id, listType },
+    where: { userId: session.user.id as string, listType },
     orderBy: { cardName: "asc" },
   })
 
