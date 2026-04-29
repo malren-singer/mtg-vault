@@ -1,11 +1,14 @@
 "use client"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { Suspense } from "react"
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get("redirect") || "/dashboard"
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -27,7 +30,7 @@ export default function LoginPage() {
       setError("Email ou mot de passe incorrect")
       setLoading(false)
     } else {
-      router.push("/dashboard")
+      router.push(redirect)
     }
   }
 
@@ -76,5 +79,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }

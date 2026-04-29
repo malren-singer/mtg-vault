@@ -1,9 +1,19 @@
 import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
+import { PrismaClient } from "@prisma/client"
+import Link from "next/link"
+import CreateOrgForm from "./CreateOrgForm"
+
+const prisma = new PrismaClient()
 
 export default async function DashboardPage() {
   const session = await auth()
   if (!session) redirect("/login")
+
+  const memberships = await prisma.orgMember.findMany({
+    where: { userId: session.user.id },
+    include: { org: true },
+  })
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
@@ -16,13 +26,38 @@ export default async function DashboardPage() {
           "use server"
           await signOut({ redirectTo: "/login" })
         }}>
-          <button
-            type="submit"
-            className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm px-4 py-2 rounded-lg transition"
-          >
+          <button type="submit" className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm px-4 py-2 rounded-lg transition">
             Se déconnecter
           </button>
         </form>
+      </div>
+
+      <div className="max-w-2xl">
+        <h2 className="text-lg font-medium mb-4">Mes guildes</h2>
+
+        {memberships.length === 0 && (
+          <p className="text-gray-500 text-sm mb-6">Tu n'as pas encore de guilde.</p>
+        )}
+
+        <div className="flex flex-col gap-3 mb-8">
+          {memberships.map((m) => (
+            <Link
+              key={m.org.id}
+              href={`/orgs/${m.org.id}`}
+              className="bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 flex items-center justify-between hover:border-indigo-500 transition"
+            >
+              <div>
+                <p className="font-medium">{m.org.name}</p>
+                <p className="text-gray-500 text-sm mt-0.5">
+                  {m.role === "ADMIN" ? "Administrateur" : "Membre"}
+                </p>
+              </div>
+              <span className="text-gray-600 text-sm">→</span>
+            </Link>
+          ))}
+        </div>
+
+        <CreateOrgForm />
       </div>
     </div>
   )
