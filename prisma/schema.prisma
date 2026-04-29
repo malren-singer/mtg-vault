@@ -1,4 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum ListType {
+  OWNED
+  WANTED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  username     String      @unique
+  email        String      @unique
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  memberships  OrgMember[]
+  cards        Card[]
+}
+
+model Organization {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  inviteToken String      @unique @default(cuid())
+  createdAt   DateTime    @default(now())
+  members     OrgMember[]
+}
+
+model OrgMember {
+  id       String       @id @default(cuid())
+  role     Role         @default(MEMBER)
+  joinedAt DateTime     @default(now())
+  userId   String
+  orgId    String
+  user     User         @relation(fields: [userId], references: [id])
+  org      Organization @relation(fields: [orgId], references: [id])
+
+  @@unique([userId, orgId])
+}
+
+model Card {
+  id         String   @id @default(cuid())
+  listType   ListType
+  scryfallId String
+  cardName   String
+  setCode    String?
+  quantity   Int      @default(1)
+  imageUri   String?
+  addedAt    DateTime @default(now())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
 }

@@ -1,11 +1,9 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import ImportForm from "../collection/ImportForm"
 import WishlistGrid from "./WishlistGrid"
 import AppLayout from "../components/AppLayout"
-
-const prisma = new PrismaClient()
 
 export default async function WishlistPage() {
   const session = await auth()

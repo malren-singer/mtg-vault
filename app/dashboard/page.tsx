@@ -1,11 +1,9 @@
 import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import CreateOrgForm from "./CreateOrgForm"
 import AppLayout from "../components/AppLayout"
-
-const prisma = new PrismaClient()
 
 export default async function DashboardPage() {
   const session = await auth()

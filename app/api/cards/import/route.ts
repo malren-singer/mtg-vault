@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
 import { auth } from "@/auth"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
 
 function parseCardList(text: string) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean)

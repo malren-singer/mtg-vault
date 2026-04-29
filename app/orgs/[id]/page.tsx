@@ -1,12 +1,10 @@
 import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import MemberActions from "./MemberActions"
 import CopyButton from "./CopyButton"
 import AppLayout from "../../components/AppLayout"
-
-const prisma = new PrismaClient()
 
 export default async function OrgPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
