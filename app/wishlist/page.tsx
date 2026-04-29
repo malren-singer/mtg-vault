@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { PrismaClient } from "@prisma/client"
 import Link from "next/link"
 import ImportForm from "../collection/ImportForm"
-import CardGrid from "../collection/CardGrid"
+import WishlistGrid from "./WishlistGrid"
 
 const prisma = new PrismaClient()
 
@@ -15,6 +15,34 @@ export default async function WishlistPage() {
     where: { userId: session.user.id, listType: "WANTED" },
     orderBy: { cardName: "asc" },
   })
+
+  const memberships = await prisma.orgMember.findMany({
+    where: { userId: session.user.id },
+    select: { orgId: true },
+  })
+
+  const allMatches = []
+
+  for (const m of memberships) {
+    const otherMembers = await prisma.orgMember.findMany({
+      where: { orgId: m.orgId, userId: { not: session.user.id } },
+      include: { user: { select: { id: true, username: true } } },
+    })
+
+    for (const member of otherMembers) {
+      const owned = await prisma.card.findMany({
+        where: {
+          userId: member.userId,
+          listType: "OWNED",
+          cardName: { in: cards.map(c => c.cardName), mode: "insensitive" },
+        },
+      })
+
+      if (owned.length > 0) {
+        allMatches.push({ member: member.user, cards: owned })
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8">
@@ -29,7 +57,7 @@ export default async function WishlistPage() {
 
         <ImportForm listType="WANTED" />
 
-        <CardGrid cards={cards} />
+        <WishlistGrid cards={cards} matches={allMatches} />
       </div>
     </div>
   )
