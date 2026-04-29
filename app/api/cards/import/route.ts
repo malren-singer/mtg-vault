@@ -52,7 +52,7 @@ async function resolveScryfall(cards: { quantity: number; name: string; setCode?
 
 export async function POST(req: NextRequest) {
   const session = await auth()
-  if (!session) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
 
   const { text, listType } = await req.json()
   if (!text || !listType) return NextResponse.json({ error: "Données manquantes" }, { status: 400 })
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   const toCreate = parsed
     .filter(c => resolved[c.name.toLowerCase()])
     .map(c => ({
-      userId: session.user.id,
+      userId: session.user!.id,
       listType: listType as "OWNED" | "WANTED",
       cardName: c.name,
       setCode: c.setCode,
