@@ -9,15 +9,16 @@ const prisma = new PrismaClient()
 
 export default async function WishlistPage() {
   const session = await auth()
-  if (!session) redirect("/login")
+  if (!session?.user?.id) redirect("/login")
+  const userId = session!.user!.id as string
 
   const cards = await prisma.card.findMany({
-    where: { userId: session.user.id, listType: "WANTED" },
+    where: { userId, listType: "WANTED" },
     orderBy: { cardName: "asc" },
   })
 
   const memberships = await prisma.orgMember.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     select: { orgId: true },
   })
 
@@ -25,7 +26,7 @@ export default async function WishlistPage() {
 
   for (const m of memberships) {
     const otherMembers = await prisma.orgMember.findMany({
-      where: { orgId: m.orgId, userId: { not: session.user.id } },
+      where: { orgId: m.orgId, userId: { not: userId } },
       include: { user: { select: { id: true, username: true } } },
     })
 

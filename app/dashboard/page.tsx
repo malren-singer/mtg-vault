@@ -9,10 +9,11 @@ const prisma = new PrismaClient()
 
 export default async function DashboardPage() {
   const session = await auth()
-  if (!session) redirect("/login")
+  if (!session?.user?.id) redirect("/login")
+  const userId = session!.user!.id as string
 
   const memberships = await prisma.orgMember.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     include: { org: true },
   })
 
@@ -21,7 +22,7 @@ export default async function DashboardPage() {
       <div className="max-w-2xl mx-auto p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-white">Bienvenue, {session.user?.name}</h1>
+            <h1 className="text-2xl font-semibold text-white">Bienvenue, {session!.user!.name}</h1>
             <p className="text-gray-400 text-sm mt-1">MTG Vault</p>
           </div>
           <form action={async () => {

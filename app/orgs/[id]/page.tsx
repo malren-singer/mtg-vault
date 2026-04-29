@@ -10,12 +10,13 @@ const prisma = new PrismaClient()
 
 export default async function OrgPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
-  if (!session) redirect("/login")
+  if (!session?.user?.id) redirect("/login")
+  const userId = session!.user!.id as string
 
   const { id } = await params
 
   const membership = await prisma.orgMember.findUnique({
-    where: { userId_orgId: { userId: session.user.id, orgId: id } },
+    where: { userId_orgId: { userId, orgId: id } },
   })
   if (!membership) redirect("/dashboard")
 
@@ -72,7 +73,7 @@ export default async function OrgPage({ params }: { params: Promise<{ id: string
                   <p className="text-sm font-medium text-white">{m.user.username}</p>
                   <p className="text-xs text-gray-500">{m.role === "ADMIN" ? "Administrateur" : "Membre"}</p>
                 </div>
-                {isAdmin && m.user.id !== session.user.id && (
+                {isAdmin && m.user.id !== userId && (
                   <MemberActions orgId={id} userId={m.user.id} />
                 )}
               </div>
