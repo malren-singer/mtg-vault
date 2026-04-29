@@ -6,7 +6,8 @@ const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const session = await auth()
-  if (!session) return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: "Non autorise" }, { status: 401 })
+  const userId = session.user.id as string
 
   const { token } = await params
 
@@ -16,12 +17,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
   if (!org) return NextResponse.json({ error: "Lien invalide" }, { status: 404 })
 
   const existing = await prisma.orgMember.findUnique({
-    where: { userId_orgId: { userId: session.user.id, orgId: org.id } },
+    where: { userId_orgId: { userId, orgId: org.id } },
   })
-  if (existing) return NextResponse.json({ error: "Déjà membre" }, { status: 400 })
+  if (existing) return NextResponse.json({ error: "Deja membre" }, { status: 400 })
 
   await prisma.orgMember.create({
-    data: { userId: session.user.id, orgId: org.id, role: "MEMBER" },
+    data: { userId, orgId: org.id, role: "MEMBER" },
   })
 
   return NextResponse.json({ orgId: org.id })
