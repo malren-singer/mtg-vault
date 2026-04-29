@@ -1,13 +1,16 @@
 "use client"
-import { useRouter } from "next/navigation"
+
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { UserMinus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function MemberActions({ orgId, userId }: { orgId: string; userId: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   async function remove() {
-    if (!confirm("Retirer ce membre ?")) return
+    if (!confirm("Retirer ce membre de la guilde ?")) return
     setLoading(true)
     await fetch(`/api/orgs/${orgId}/members`, {
       method: "DELETE",
@@ -19,12 +22,14 @@ export default function MemberActions({ orgId, userId }: { orgId: string; userId
   }
 
   return (
-    <button
+    <Button
+      variant="destructive"
+      size="xs"
       onClick={remove}
       disabled={loading}
-      className="text-red-400 hover:text-red-300 text-sm transition disabled:opacity-50"
     >
+      <UserMinus className="size-3" />
       Retirer
-    </button>
+    </Button>
   )
 }

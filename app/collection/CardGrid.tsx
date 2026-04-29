@@ -1,8 +1,12 @@
 "use client"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Minus, Plus, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 
-type Card = {
+type CardType = {
   id: string
   cardName: string
   quantity: number
@@ -10,61 +14,55 @@ type Card = {
   setCode: string | null
 }
 
-const COLUMNS_OPTIONS = [3, 4, 5, 6, 7, 8, 10, 12]
-const CARD_WIDTH = 160
-const CARD_HEIGHT = Math.round(CARD_WIDTH * (88 / 63))
+const COLUMNS_OPTIONS = [2, 3, 4, 5, 6, 8]
 
-export default function CardGrid({ cards }: { cards: Card[] }) {
+export default function CardGrid({ cards }: { cards: CardType[] }) {
   const router = useRouter()
-  const [columns, setColumns] = useState(6)
+  const [columns, setColumns] = useState(4)
 
   if (cards.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-600">
-        <p className="text-lg">Aucune carte pour l'instant</p>
-        <p className="text-sm mt-2">Importe un fichier .txt pour commencer</p>
-      </div>
+      <Card>
+        <CardContent className="py-16 text-center text-muted-foreground">
+          <p className="font-medium">Aucune carte pour l&apos;instant</p>
+          <p className="text-sm mt-1">Importe un fichier .txt pour commencer</p>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-6 bg-gray-900 border border-gray-800 rounded-xl px-5 py-3">
-        <span className="text-sm text-gray-400">Colonnes</span>
-        <div className="flex gap-1">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-muted-foreground hidden sm:block">Colonnes</span>
+        <div className="hidden sm:flex gap-1">
           {COLUMNS_OPTIONS.map((col) => (
-            <button
+            <Button
               key={col}
+              variant={columns === col ? "default" : "outline"}
+              size="icon-sm"
               onClick={() => setColumns(col)}
-              className={`w-7 h-7 rounded-lg text-xs font-medium transition ${
-                columns === col
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
+              className="text-xs"
             >
               {col}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        className="grid gap-3 mtg-card-grid"
+        style={{ "--mtg-cols": `repeat(${columns}, minmax(0, 1fr))` } as React.CSSProperties}
       >
         {cards.map((card) => (
-          <CardItem
-            key={card.id}
-            card={card}
-            onUpdate={() => router.refresh()}
-          />
+          <CardItem key={card.id} card={card} onUpdate={() => router.refresh()} />
         ))}
       </div>
     </div>
   )
 }
 
-function CardItem({ card, onUpdate }: { card: Card; onUpdate: () => void }) {
+function CardItem({ card, onUpdate }: { card: CardType; onUpdate: () => void }) {
   const [quantity, setQuantity] = useState(card.quantity)
   const [loading, setLoading] = useState(false)
 
@@ -92,52 +90,49 @@ function CardItem({ card, onUpdate }: { card: Card; onUpdate: () => void }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div
-        className="relative rounded-lg overflow-hidden bg-gray-800 w-full"
-        style={{ aspectRatio: "63/88" }}
-      >
+    <div className="flex flex-col gap-1.5">
+      <div className="relative rounded-lg overflow-hidden bg-muted w-full" style={{ aspectRatio: "63/88" }}>
         {card.imageUri ? (
-          <img
-            src={card.imageUri}
-            alt={card.cardName}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          <img src={card.imageUri} alt={card.cardName} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs text-center p-2">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs text-center p-2">
             {card.cardName}
           </div>
         )}
       </div>
 
-      <p className="text-xs text-gray-400 text-center truncate w-full px-1">{card.cardName}</p>
+      <p className="text-xs text-muted-foreground text-center truncate px-1">{card.cardName}</p>
 
-      <div className="flex items-center justify-between w-full px-1">
-        <button
+      <div className="flex items-center justify-between gap-1 px-1">
+        <Button
+          variant="outline"
+          size="icon-xs"
           onClick={() => updateQuantity(quantity - 1)}
           disabled={loading}
-          className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg leading-none transition disabled:opacity-50"
         >
-          −
-        </button>
-        <span className="text-white text-sm font-medium">{quantity}</span>
-        <button
+          <Minus className="size-3" />
+        </Button>
+        <span className="text-sm font-semibold tabular-nums">{quantity}</span>
+        <Button
+          variant="outline"
+          size="icon-xs"
           onClick={() => updateQuantity(quantity + 1)}
           disabled={loading}
-          className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg leading-none transition disabled:opacity-50"
         >
-          +
-        </button>
+          <Plus className="size-3" />
+        </Button>
       </div>
 
-      <button
+      <Button
+        variant="ghost"
+        size="xs"
         onClick={deleteCard}
         disabled={loading}
-        className="text-red-400 hover:text-red-300 text-xs transition disabled:opacity-50"
+        className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full"
       >
+        <Trash2 className="size-3" />
         Supprimer
-      </button>
+      </Button>
     </div>
   )
 }

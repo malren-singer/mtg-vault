@@ -1,7 +1,13 @@
 "use client"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Layers } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -34,58 +40,48 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm bg-gray-900 rounded-2xl p-8 border border-gray-800">
-        <h1 className="text-2xl font-semibold text-white mb-1">MTG Vault</h1>
-        <p className="text-gray-400 text-sm mb-8">Crée ton compte</p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Nom d'utilisateur</label>
-            <input
-              name="username"
-              type="text"
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
-            />
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm space-y-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2 text-primary">
+            <Layers className="size-8" />
+            <span className="text-2xl font-bold">MTG Vault</span>
           </div>
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Email</label>
-            <input
-              name="email"
-              type="email"
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Mot de passe</label>
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={6}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
-            />
-          </div>
+          <p className="text-muted-foreground text-sm">Gestion de collection Magic</p>
+        </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-2.5 text-sm font-medium transition disabled:opacity-50"
-          >
-            {loading ? "Création..." : "Créer mon compte"}
-          </button>
-        </form>
-
-        <p className="text-gray-500 text-sm text-center mt-6">
-          Déjà un compte ?{" "}
-          <Link href="/login" className="text-indigo-400 hover:text-indigo-300">
-            Se connecter
-          </Link>
-        </p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Créer un compte</CardTitle>
+            <CardDescription>Rejoins MTG Vault gratuitement</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="username">Nom d&apos;utilisateur</Label>
+                <Input id="username" name="username" type="text" placeholder="Gandalf" required />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" placeholder="tu@example.com" required />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input id="password" name="password" type="password" required minLength={6} />
+              </div>
+              {error && <p className="text-destructive text-sm">{error}</p>}
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Création..." : "Créer mon compte"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="justify-center text-sm text-muted-foreground">
+            Déjà un compte ?&nbsp;
+            <Link href="/login" className="text-primary hover:underline font-medium">
+              Se connecter
+            </Link>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

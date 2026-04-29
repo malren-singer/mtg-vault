@@ -1,8 +1,13 @@
 "use client"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Minus, Plus, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 
-type Card = {
+type CardType = {
   id: string
   cardName: string
   quantity: number
@@ -12,14 +17,14 @@ type Card = {
 
 type Match = {
   member: { id: string; username: string }
-  cards: Card[]
+  cards: CardType[]
 }
 
-const COLUMNS_OPTIONS = [3, 4, 5, 6, 7, 8, 10, 12]
+const COLUMNS_OPTIONS = [2, 3, 4, 5, 6, 8]
 
-export default function WishlistGrid({ cards, matches }: { cards: Card[]; matches: Match[] }) {
+export default function WishlistGrid({ cards, matches }: { cards: CardType[]; matches: Match[] }) {
   const router = useRouter()
-  const [columns, setColumns] = useState(6)
+  const [columns, setColumns] = useState(4)
 
   const matchMap: Record<string, string[]> = {}
   for (const match of matches) {
@@ -34,148 +39,154 @@ export default function WishlistGrid({ cards, matches }: { cards: Card[]; matche
 
   if (cards.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-600">
-        <p className="text-lg">Aucune carte pour l'instant</p>
-        <p className="text-sm mt-2">Importe un fichier .txt pour commencer</p>
-      </div>
+      <Card>
+        <CardContent className="py-16 text-center text-muted-foreground">
+          <p className="font-medium">Aucune carte pour l&apos;instant</p>
+          <p className="text-sm mt-1">Importe un fichier .txt pour commencer</p>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-6 bg-gray-900 border border-gray-800 rounded-xl px-5 py-3">
-        <span className="text-sm text-gray-400">Colonnes</span>
-        <div className="flex gap-1">
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-muted-foreground hidden sm:block">Colonnes</span>
+        <div className="hidden sm:flex gap-1">
           {COLUMNS_OPTIONS.map((col) => (
-            <button
+            <Button
               key={col}
+              variant={columns === col ? "default" : "outline"}
+              size="icon-sm"
               onClick={() => setColumns(col)}
-              className={`w-7 h-7 rounded-lg text-xs font-medium transition ${
-                columns === col
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
+              className="text-xs"
             >
               {col}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        className="grid gap-3 mtg-card-grid"
+        style={{ "--mtg-cols": `repeat(${columns}, minmax(0, 1fr))` } as React.CSSProperties}
       >
         {cards.map((card) => {
           const owners = matchMap[card.cardName.toLowerCase()] || []
-          const hasMatch = owners.length > 0
-
           return (
-            <div key={card.id} className="flex flex-col items-center gap-2">
-              <div style={{
-                position: "relative",
-                width: "100%",
-                aspectRatio: "63/88",
-                borderRadius: "8px",
-                overflow: "hidden",
-                backgroundColor: "#1f2937",
-                outline: hasMatch ? "2px solid #22c55e" : "none",
-              }}>
-                {card.imageUri ? (
-                  <img
-                    src={card.imageUri}
-                    alt={card.cardName}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div style={{
-                    width: "100%", height: "100%",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#4b5563", fontSize: "12px", textAlign: "center", padding: "8px"
-                  }}>
-                    {card.cardName}
-                  </div>
-                )}
-
-                {hasMatch && (
-                  <div style={{
-                    position: "absolute",
-                    top: "6px",
-                    right: "6px",
-                    backgroundColor: "#22c55e",
-                    color: "white",
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    padding: "2px 6px",
-                    borderRadius: "6px",
-                    zIndex: 10,
-                    lineHeight: "1.4",
-                  }}>
-                    ✓
-                  </div>
-                )}
-              </div>
-
-              <p className="text-xs text-gray-400 text-center truncate w-full px-1">
-                {card.cardName}
-              </p>
-
-              {hasMatch && (
-                <p className="text-xs text-green-400 text-center px-1">
-                  {owners.join(", ")}
-                </p>
-              )}
-
-              <div className="flex items-center justify-between w-full px-1">
-                <button
-                  onClick={async () => {
-                    if (card.quantity <= 1) {
-                      if (!confirm(`Supprimer "${card.cardName}" ?`)) return
-                      await fetch(`/api/cards/${card.id}`, { method: "DELETE" })
-                    } else {
-                      await fetch(`/api/cards/${card.id}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ quantity: card.quantity - 1 }),
-                      })
-                    }
-                    router.refresh()
-                  }}
-                  className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg leading-none transition"
-                >
-                  −
-                </button>
-                <span className="text-white text-sm font-medium">{card.quantity}</span>
-                <button
-                  onClick={async () => {
-                    await fetch(`/api/cards/${card.id}`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ quantity: card.quantity + 1 }),
-                    })
-                    router.refresh()
-                  }}
-                  className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center text-lg leading-none transition"
-                >
-                  +
-                </button>
-              </div>
-
-              <button
-                onClick={async () => {
-                  if (!confirm(`Supprimer "${card.cardName}" ?`)) return
-                  await fetch(`/api/cards/${card.id}`, { method: "DELETE" })
-                  router.refresh()
-                }}
-                className="text-red-400 hover:text-red-300 text-xs transition"
-              >
-                Supprimer
-              </button>
-            </div>
+            <WishlistItem
+              key={card.id}
+              card={card}
+              owners={owners}
+              onUpdate={() => router.refresh()}
+            />
           )
         })}
       </div>
+    </div>
+  )
+}
+
+function WishlistItem({
+  card,
+  owners,
+  onUpdate,
+}: {
+  card: CardType
+  owners: string[]
+  onUpdate: () => void
+}) {
+  const [loading, setLoading] = useState(false)
+  const hasMatch = owners.length > 0
+
+  async function updateQuantity(newQty: number) {
+    if (newQty < 1) {
+      await deleteCard()
+      return
+    }
+    setLoading(true)
+    await fetch(`/api/cards/${card.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantity: newQty }),
+    })
+    setLoading(false)
+    onUpdate()
+  }
+
+  async function deleteCard() {
+    if (!confirm(`Supprimer "${card.cardName}" ?`)) return
+    setLoading(true)
+    await fetch(`/api/cards/${card.id}`, { method: "DELETE" })
+    onUpdate()
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div
+        className="relative rounded-lg overflow-hidden bg-muted w-full"
+        style={{
+          aspectRatio: "63/88",
+          outline: hasMatch ? "2px solid oklch(0.70 0.15 140)" : "none",
+        }}
+      >
+        {card.imageUri ? (
+          <img src={card.imageUri} alt={card.cardName} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs text-center p-2">
+            {card.cardName}
+          </div>
+        )}
+        {hasMatch && (
+          <div className="absolute top-1.5 right-1.5">
+            <Badge
+              className="text-xs px-1.5 py-0"
+              style={{ backgroundColor: "oklch(0.70 0.15 140)", color: "white" }}
+            >
+              ✓
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-muted-foreground text-center truncate px-1">{card.cardName}</p>
+
+      {hasMatch && (
+        <p className="text-xs text-center px-1 truncate" style={{ color: "oklch(0.70 0.15 140)" }}>
+          {owners.join(", ")}
+        </p>
+      )}
+
+      <div className="flex items-center justify-between gap-1 px-1">
+        <Button
+          variant="outline"
+          size="icon-xs"
+          onClick={() => updateQuantity(card.quantity - 1)}
+          disabled={loading}
+        >
+          <Minus className="size-3" />
+        </Button>
+        <span className="text-sm font-semibold tabular-nums">{card.quantity}</span>
+        <Button
+          variant="outline"
+          size="icon-xs"
+          onClick={() => updateQuantity(card.quantity + 1)}
+          disabled={loading}
+        >
+          <Plus className="size-3" />
+        </Button>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="xs"
+        onClick={deleteCard}
+        disabled={loading}
+        className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full"
+      >
+        <Trash2 className="size-3" />
+        Supprimer
+      </Button>
     </div>
   )
 }

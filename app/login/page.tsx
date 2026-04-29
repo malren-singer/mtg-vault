@@ -1,9 +1,14 @@
 "use client"
-import { useState } from "react"
+
+import { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Suspense } from "react"
+import { Layers } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 function LoginForm() {
   const router = useRouter()
@@ -20,11 +25,7 @@ function LoginForm() {
     const email = (form.elements.namedItem("email") as HTMLInputElement).value
     const password = (form.elements.namedItem("password") as HTMLInputElement).value
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    })
+    const res = await signIn("credentials", { email, password, redirect: false })
 
     if (res?.error) {
       setError("Email ou mot de passe incorrect")
@@ -35,48 +36,44 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm bg-gray-900 rounded-2xl p-8 border border-gray-800">
-        <h1 className="text-2xl font-semibold text-white mb-1">MTG Vault</h1>
-        <p className="text-gray-400 text-sm mb-8">Connecte-toi à ton compte</p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Email</label>
-            <input
-              name="email"
-              type="email"
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
-            />
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm space-y-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2 text-primary">
+            <Layers className="size-8" />
+            <span className="text-2xl font-bold">MTG Vault</span>
           </div>
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Mot de passe</label>
-            <input
-              name="password"
-              type="password"
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
-            />
-          </div>
+          <p className="text-muted-foreground text-sm">Gestion de collection Magic</p>
+        </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-2.5 text-sm font-medium transition disabled:opacity-50"
-          >
-            {loading ? "Connexion..." : "Se connecter"}
-          </button>
-        </form>
-
-        <p className="text-gray-500 text-sm text-center mt-6">
-          Pas encore de compte ?{" "}
-          <Link href="/register" className="text-indigo-400 hover:text-indigo-300">
-            S'inscrire
-          </Link>
-        </p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Connexion</CardTitle>
+            <CardDescription>Connecte-toi à ton compte</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" placeholder="tu@example.com" required />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input id="password" name="password" type="password" required />
+              </div>
+              {error && <p className="text-destructive text-sm">{error}</p>}
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Connexion..." : "Se connecter"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="justify-center text-sm text-muted-foreground">
+            Pas encore de compte ?&nbsp;
+            <Link href="/register" className="text-primary hover:underline font-medium">
+              S&apos;inscrire
+            </Link>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

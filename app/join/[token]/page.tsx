@@ -1,6 +1,9 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
+import { Layers, Loader2, CheckCircle, XCircle } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function JoinPage() {
   const router = useRouter()
@@ -30,18 +33,35 @@ export default function JoinPage() {
   }, [token, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center max-w-sm w-full">
-        {status === "loading" && (
-          <p className="text-gray-400">Vérification du lien...</p>
-        )}
-        {status === "success" && (
-          <p className="text-green-400">Guilde rejointe ! Redirection...</p>
-        )}
-        {status === "error" && (
-          <p className="text-red-400">{message}</p>
-        )}
-      </div>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <Card className="w-full max-w-sm text-center">
+        <CardHeader>
+          <div className="flex justify-center mb-2">
+            <Layers className="size-8 text-primary" />
+          </div>
+          <CardTitle>Rejoindre une guilde</CardTitle>
+        </CardHeader>
+        <CardContent className="pb-6">
+          {status === "loading" && (
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <Loader2 className="size-6 animate-spin text-primary" />
+              <p className="text-sm">Vérification du lien...</p>
+            </div>
+          )}
+          {status === "success" && (
+            <div className="flex flex-col items-center gap-3" style={{ color: "oklch(0.70 0.15 140)" }}>
+              <CheckCircle className="size-6" />
+              <p className="text-sm font-medium">Guilde rejointe ! Redirection...</p>
+            </div>
+          )}
+          {status === "error" && (
+            <div className="flex flex-col items-center gap-3 text-destructive">
+              <XCircle className="size-6" />
+              <p className="text-sm">{message}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

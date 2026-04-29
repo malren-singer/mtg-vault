@@ -1,9 +1,16 @@
 import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { ArrowLeft, Crown, LogOut, Link2, Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import MemberActions from "./MemberActions"
 import CopyButton from "./CopyButton"
+import OrgActions from "./OrgActions"
 import AppLayout from "../../components/AppLayout"
 
 export default async function OrgPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,56 +35,104 @@ export default async function OrgPage({ params }: { params: Promise<{ id: string
   })
   if (!org) redirect("/dashboard")
 
-  const inviteUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/join/${org.inviteToken}`
+  const headersList = await headers()
+  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost:3000"
+  const proto = headersList.get("x-forwarded-proto") || "http"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`
+  const inviteUrl = `${baseUrl}/join/${org.inviteToken}`
   const isAdmin = membership.role === "ADMIN"
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-white">{org.name}</h1>
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="icon-sm">
+                <ArrowLeft className="size-4" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-xl font-bold">{org.name}</h1>
+              {isAdmin && (
+                <p className="text-xs text-primary flex items-center gap-1 mt-0.5">
+                  <Crown className="size-3" /> Administrateur
+                </p>
+              )}
+            </div>
           </div>
           <form action={async () => {
             "use server"
             await signOut({ redirectTo: "/login" })
           }}>
-            <button type="submit" className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm px-4 py-2 rounded-lg transition">
-              Se déconnecter
-            </button>
+            <Button type="submit" variant="outline" size="sm">
+              <LogOut className="size-4" />
+              <span className="hidden sm:inline">Se déconnecter</span>
+            </Button>
           </form>
         </div>
 
         {isAdmin && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
-            <p className="text-sm font-medium text-white mb-2">Lien d'invitation</p>
-            <div className="flex gap-2">
-              <input
-                readOnly
-                value={inviteUrl}
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none"
-              />
-              <CopyButton url={inviteUrl} />
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Link2 className="size-4 text-primary" />
+                Lien d&apos;invitation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={inviteUrl}
+                  className="flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-muted-foreground focus:outline-none truncate"
+                />
+                <CopyButton url={inviteUrl} />
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="font-medium text-white mb-4">Membres ({org.members.length})</h2>
-          <div className="flex flex-col gap-3">
-            {org.members.map((m) => (
-              <div key={m.id} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white">{m.user.username}</p>
-                  <p className="text-xs text-gray-500">{m.role === "ADMIN" ? "Administrateur" : "Membre"}</p>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="size-4 text-primary" />
+              Membres
+              <Badge variant="secondary" className="ml-auto">{org.members.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 grid gap-0">
+            {org.members.map((m, i) => (
+              <div key={m.id}>
+                {i > 0 && <Separator className="my-3" />}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-full bg-primary/15 flex items-center justify-center text-primary text-sm font-semibold">
+                      {m.user.username[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{m.user.username}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {m.role === "ADMIN" ? "Administrateur" : "Membre"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {m.role === "ADMIN" && (
+                      <Crown className="size-3.5 text-primary" />
+                    )}
+                    {isAdmin && m.user.id !== userId && (
+                      <MemberActions orgId={id} userId={m.user.id} />
+                    )}
+                  </div>
                 </div>
-                {isAdmin && m.user.id !== userId && (
-                  <MemberActions orgId={id} userId={m.user.id} />
-                )}
               </div>
             ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+
+        <OrgActions orgId={id} isAdmin={isAdmin} />
       </div>
     </AppLayout>
   )

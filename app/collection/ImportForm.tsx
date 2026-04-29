@@ -1,6 +1,11 @@
 "use client"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Upload, ChevronDown, ChevronUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function ImportForm({ listType }: { listType: "OWNED" | "WANTED" }) {
   const router = useRouter()
@@ -39,55 +44,47 @@ export default function ImportForm({ listType }: { listType: "OWNED" | "WANTED" 
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-medium">Importer des cartes</h3>
-        <button
-          onClick={() => setOpen(!open)}
-          className="text-sm text-indigo-400 hover:text-indigo-300 transition"
-        >
-          {open ? "Fermer" : "Ouvrir"}
-        </button>
-      </div>
+    <Card className="mb-6">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base">Importer des cartes</CardTitle>
+          <Button variant="ghost" size="sm" onClick={() => setOpen(!open)}>
+            {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            {open ? "Fermer" : "Ouvrir"}
+          </Button>
+        </div>
+      </CardHeader>
 
       {open && (
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-3">
-            <label className="flex-1 flex items-center justify-center gap-2 bg-gray-800 border border-dashed border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-400 cursor-pointer hover:border-indigo-500 transition">
-              <span>Choisir un fichier .txt</span>
-              <input
-                type="file"
-                accept=".txt"
-                onChange={handleFile}
-                className="hidden"
-              />
-            </label>
-          </div>
+        <CardContent className="grid gap-3 pt-0">
+          <label className="flex items-center justify-center gap-2 border border-dashed border-border rounded-lg px-4 py-3 text-sm text-muted-foreground cursor-pointer hover:border-primary hover:text-primary transition-colors">
+            <Upload className="size-4" />
+            Choisir un fichier .txt
+            <input type="file" accept=".txt" onChange={handleFile} className="hidden" />
+          </label>
 
-          <textarea
+          <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={"4 Lightning Bolt\n2 Snapcaster Mage [MH2]\n1 Black Lotus"}
             rows={6}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-300 font-mono focus:outline-none focus:border-indigo-500 resize-none"
+            className="font-mono text-sm resize-none"
           />
 
-          <button
-            onClick={handleImport}
-            disabled={loading || !text.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-2.5 text-sm font-medium transition disabled:opacity-50"
-          >
+          <Button onClick={handleImport} disabled={loading || !text.trim()} className="w-full">
             {loading ? "Import en cours..." : "Importer"}
-          </button>
+          </Button>
 
           {result?.imported !== undefined && (
-            <p className="text-green-400 text-sm">{result.imported} carte{result.imported !== 1 ? "s" : ""} importée{result.imported !== 1 ? "s" : ""}</p>
+            <p className="text-sm text-center" style={{ color: "oklch(0.70 0.15 140)" }}>
+              ✓ {result.imported} carte{result.imported !== 1 ? "s" : ""} importée{result.imported !== 1 ? "s" : ""}
+            </p>
           )}
           {result?.error && (
-            <p className="text-red-400 text-sm">{result.error}</p>
+            <p className="text-destructive text-sm text-center">{result.error}</p>
           )}
-        </div>
+        </CardContent>
       )}
-    </div>
+    </Card>
   )
 }
