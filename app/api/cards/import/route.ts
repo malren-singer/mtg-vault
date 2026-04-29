@@ -62,10 +62,12 @@ export async function POST(req: NextRequest) {
 
   const resolved = await resolveScryfall(parsed)
 
+  const userId = session.user!.id as string
+
   const toCreate = parsed
     .filter(c => resolved[c.name.toLowerCase()])
     .map(c => ({
-      userId: session.user!.id,
+      userId,
       listType: listType as "OWNED" | "WANTED",
       cardName: c.name,
       setCode: c.setCode,
