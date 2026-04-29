@@ -1,9 +1,9 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { PrismaClient } from "@prisma/client"
-import Link from "next/link"
 import ImportForm from "../collection/ImportForm"
 import WishlistGrid from "./WishlistGrid"
+import AppLayout from "../components/AppLayout"
 
 const prisma = new PrismaClient()
 
@@ -45,20 +45,15 @@ export default async function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Link href="/dashboard" className="text-gray-500 text-sm hover:text-gray-300 mb-2 block">← Dashboard</Link>
-            <h1 className="text-2xl font-semibold">Ma wishlist</h1>
-            <p className="text-gray-400 text-sm mt-1">{cards.length} carte{cards.length !== 1 ? "s" : ""}</p>
-          </div>
+    <AppLayout>
+      <div className="max-w-6xl mx-auto p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-white">Ma wishlist</h1>
+          <p className="text-gray-400 text-sm mt-1">{cards.length} carte{cards.length !== 1 ? "s" : ""}</p>
         </div>
-
         <ImportForm listType="WANTED" />
-
         <WishlistGrid cards={cards} matches={allMatches} />
       </div>
-    </div>
+    </AppLayout>
   )
 }

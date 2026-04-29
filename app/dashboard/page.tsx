@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { PrismaClient } from "@prisma/client"
 import Link from "next/link"
 import CreateOrgForm from "./CreateOrgForm"
+import AppLayout from "../components/AppLayout"
 
 const prisma = new PrismaClient()
 
@@ -16,11 +17,11 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-2xl mx-auto">
+    <AppLayout>
+      <div className="max-w-2xl mx-auto p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold">Bienvenue, {session.user?.name}</h1>
+            <h1 className="text-2xl font-semibold text-white">Bienvenue, {session.user?.name}</h1>
             <p className="text-gray-400 text-sm mt-1">MTG Vault</p>
           </div>
           <form action={async () => {
@@ -34,23 +35,17 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-8">
-          <Link
-            href="/collection"
-            className="bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 hover:border-indigo-500 transition"
-          >
-            <p className="font-medium">Ma collection</p>
+          <Link href="/collection" className="bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 hover:border-indigo-500 transition">
+            <p className="font-medium text-white">Ma collection</p>
             <p className="text-gray-500 text-sm mt-1">Cartes que je possède</p>
           </Link>
-          <Link
-            href="/wishlist"
-            className="bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 hover:border-indigo-500 transition"
-          >
-            <p className="font-medium">Ma wishlist</p>
+          <Link href="/wishlist" className="bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 hover:border-indigo-500 transition">
+            <p className="font-medium text-white">Ma wishlist</p>
             <p className="text-gray-500 text-sm mt-1">Cartes que je cherche</p>
           </Link>
         </div>
 
-        <h2 className="text-lg font-medium mb-4">Mes guildes</h2>
+        <h2 className="text-lg font-medium text-white mb-4">Mes guildes</h2>
 
         {memberships.length === 0 && (
           <p className="text-gray-500 text-sm mb-6">Tu n'as pas encore de guilde.</p>
@@ -64,7 +59,7 @@ export default async function DashboardPage() {
               className="bg-gray-900 border border-gray-800 rounded-xl px-5 py-4 flex items-center justify-between hover:border-indigo-500 transition"
             >
               <div>
-                <p className="font-medium">{m.org.name}</p>
+                <p className="font-medium text-white">{m.org.name}</p>
                 <p className="text-gray-500 text-sm mt-0.5">
                   {m.role === "ADMIN" ? "Administrateur" : "Membre"}
                 </p>
@@ -76,6 +71,6 @@ export default async function DashboardPage() {
 
         <CreateOrgForm />
       </div>
-    </div>
+    </AppLayout>
   )
 }

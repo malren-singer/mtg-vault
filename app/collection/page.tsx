@@ -1,9 +1,9 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { PrismaClient } from "@prisma/client"
-import Link from "next/link"
 import ImportForm from "./ImportForm"
 import CardGrid from "./CardGrid"
+import AppLayout from "../components/AppLayout"
 
 const prisma = new PrismaClient()
 
@@ -17,20 +17,15 @@ export default async function CollectionPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Link href="/dashboard" className="text-gray-500 text-sm hover:text-gray-300 mb-2 block">← Dashboard</Link>
-            <h1 className="text-2xl font-semibold">Ma collection</h1>
-            <p className="text-gray-400 text-sm mt-1">{cards.length} carte{cards.length !== 1 ? "s" : ""}</p>
-          </div>
+    <AppLayout>
+      <div className="max-w-6xl mx-auto p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-white">Ma collection</h1>
+          <p className="text-gray-400 text-sm mt-1">{cards.length} carte{cards.length !== 1 ? "s" : ""}</p>
         </div>
-
         <ImportForm listType="OWNED" />
-
         <CardGrid cards={cards} />
       </div>
-    </div>
+    </AppLayout>
   )
 }
